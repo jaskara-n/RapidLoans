@@ -34,6 +34,14 @@ contract HelperConfig is Script {
         return sepoliaConfig;
     }
 
+    function getMainnetConfig() public pure returns (NetworkConfig memory) {
+        NetworkConfig memory mainnetConfig = NetworkConfig({
+            poolAddressProvider: 0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e,
+            USDT: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+        });
+        return mainnetConfig;
+    }
+
     function getAnvilConfig() public returns (NetworkConfig memory) {
         if (ActiveConfig.poolAddressProvider != address(0)) {
             return ActiveConfig;

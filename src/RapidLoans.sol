@@ -11,6 +11,12 @@ contract RapidLoans is FlashLoanSimpleReceiverBase {
     address public poolAddressProv;
 
     event loanRequested(address asset, uint256 amount, uint256 typ);
+    event loanExecuted(
+        address asset,
+        uint256 amount,
+        uint256 premium,
+        address initiator
+    );
 
     constructor(
         address _poolAddressProvider
@@ -59,29 +65,19 @@ contract RapidLoans is FlashLoanSimpleReceiverBase {
         address initiator,
         bytes calldata params
     ) external override returns (bool) {
+        // deductPremiumFromUser(initiator, premium, asset);
         uint256 repayAmount = amount + premium;
         IERC20(asset).approve(address(POOL), repayAmount);
+        emit loanExecuted(asset, amount, premium, initiator);
         return true;
     }
-
-    /**  function executeOperation(
-    address asset,
-    uint256 amount,
-    uint256 premium,    
-    address, // initiator
-    bytes memory // params
-  ) public override returns (bool) {
-    if (_failExecution) {
-      emit ExecutedWithFail(asset, amount, premium);
-      return !_simulateEOA;
-    } */
 
     function deductPremiumFromUser(
         address initiator,
         uint256 premium,
         address asset
     ) internal {
-        // IERC20(asset).approve(initiator, premium);
+        IERC20(asset).approve(initiator, premium);
         require(
             IERC20(asset).allowance(address(this), initiator) >= premium,
             "approve tokens!!"
@@ -95,9 +91,15 @@ contract RapidLoans is FlashLoanSimpleReceiverBase {
 
     function protectLiquidation() internal {}
 
-    function fund() public payable {}
-
     function getPoolAddress() public view returns (address) {
         return poolAddressProv;
     }
+
+    function getContractTokenBal(
+        address tokenAdd
+    ) public view returns (uint256) {
+        return IERC20(tokenAdd).balanceOf(address(this));
+    }
+
+    receive() external payable {}
 }
